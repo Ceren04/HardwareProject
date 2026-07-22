@@ -1,0 +1,14 @@
+# Derlenmiş ikilikler
+*.o
+*.out
+*.exe
+a.out
+# Derleyici çıktısı olan uzantısız ikilikler için: build klasörü kullan
+build/
+# Colab / Python
+__pycache__/
+.ipynb_checkpoints/
+# Profilci çıktıları (büyük dosyalar)
+*.ncu-rep
+*.nsys-rep
+*.qdrep

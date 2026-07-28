@@ -49,3 +49,39 @@ Doğru VE temiz ölçüm için CUDA events şart. Terazi bu yüzden events kulla
 - Öğrenilen: sync'li CPU ölçümü doğru *mertebeyi* verir (kopyalama
   mikrosaniyeler değil milisaniyeler sürüyor) ama events kadar temiz değildir.
   "En sinsi tuzak" A: sync'i unutursan kernel'i imkansız hızlı sanırsın.
+
+## Deney 2 — warm-up'lı vs warm-up'sız
+
+### Tahmin (ölçmeden önce)
+warmup=0 ilk-çağrı şişkinliğini ölçüme katar → çok daha büyük çıkar;
+warmup=10 şişkinliği dışarıda bırakır → küçük. Belki birkaç kat fark.
+
+### Ölçüm (iki ayrı program, her biri taze/soğuk süreç)
+| Ölçüm | Süre |
+|---|---|
+| warmup=0,  iter=1 | 2.2734 ms |
+| warmup=10, iter=1 | 2.2416 ms |
+
+Fark ~%1 → yok denecek kadar az. **Tahmin tutmadı.**
+
+### Neden fark yok? (asıl ders)
+İlk-çağrı şişkinliği "ilk memcpy"ye değil, "programdaki ilk CUDA işi"ne aittir.
+Programda repeat'ten ÖNCE cudaMalloc + cudaMemset çalıştı; context kurulumu /
+sürücü hazırlığı orada ödendi. repeat'e girildiğinde GPU zaten ısınmıştı, bu
+yüzden memcpy seviyesinde warmup fark yaratmadı — şişkinliği cudaMalloc soğurdu.
+
+### O zaman warm-up gereksiz mi? HAYIR
+- Bu deneyde şişkinliği başka bir çağrı (cudaMalloc) maskeledi. İlk CUDA işi
+  doğrudan memcpy olsaydı warmup=0 dramatik büyük çıkardı.
+- İlk-çağrı maliyetinin kaynakları: context/sürücü kurulumu, kodun GPU'ya
+  yüklenmesi, GPU'nun düşük güç modundan tam saate çıkması. Warm-up bunları
+  ölçüm dışında tutar.
+
+### Çapraz doğrulama
+Bu iki sayı (2.27 / 2.24 ms), Deney 1'in C ölçümü (2.24 ms) ve repeat
+terazisinin kopya-başına süresi (2.221 ms) ile birebir uyuşuyor. Üç bağımsız
+ölçüm aynı "ısınmış memcpy" süresini veriyor → terazi tutarlı ve sağlam.
+
+### Gün 3-4 sonucu
+Terazi (repeat) kuruldu, 241.81 GB/s ile doğrulandı. İki deney de yapıldı:
+"neden CPU timer yanlış" (Deney 1) ve "neden warm-up" (Deney 2) açıklamaları yazıldı.

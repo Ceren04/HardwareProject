@@ -12,3 +12,9 @@ Detayli sonuc ve yorumlar: `notes/faz0-gun3-4-zamanlama.md`
 
 Not: deney2a ve deney2b AYRI programlar cunku her `./program` taze/soguk
 bir surec baslatir; soguk baslangic etkisini gormek icin bu gerekli.
+
+## Gun 5 dosyalari
+| Dosya | Ne | Amac |
+|---|---|---|
+| check_test.cu   | checkCudaErrors makro testi | Sessiz hata tuzagini cozen makronun dogrulanmasi |
+| metrics_test.cu | Metrik fonksiyon testi | bandwidth/gflops/arithmetic_intensity'nin bilinen degerlerle kalibrasyonu |

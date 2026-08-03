@@ -34,3 +34,20 @@
 * Çok küçük bloklar (32) kullanıldığında SM (Streaming Multiprocessor) üzerindeki donanımsal blok sınırına takılıyoruz, bu da çok düşük occupancy (%50) değerlerine neden olarak bant genişliğini 149.76 GB/s'ye düşürüyor[cite: 2].
 * Ortalarda (64 - 1024 arası) SM tam kapasiteyle (1024 thread) çalıştığı için performans tepe noktasına ulaşıyor ve stabil kalıyor[cite: 2].
 * SAXPY kernel'i çok az kaynak tükettiği için uç noktadaki 1024 thread/block değerinde bile performans kaybı (register baskısı) yaşanmıyor.
+
+---
+
+## Tarama C: Erişim Deseni (Stride) Stres Testi
+| Stride | Sure (ms) | Efektif Bant Gen. (GB/s) |
+|---|---|---|
+| 1 | 0.051 | 247.15 |
+| 2 | 0.098 | 127.89 |
+| 4 | 0.202 | 62.17 |
+| 8 | 0.425 | 29.63 |
+| 16 | 0.778 | 16.17 |
+| 32 | 1.076 | 11.69 |
+
+**Analiz:**
+* Bu deney "Memory Coalescing" (Bellek Birleştirme) kavramının etkisini izole bir şekilde kanıtlamaktadır[cite: 2].
+* Stride = 1 olduğunda bir warp içindeki 32 thread, bellekteki ardışık adreslere erişir. Global bellek 32-baytlık işlemlerle erişildiği için bu ardışık istekler donanım tarafından tek bir işlemde toplanır (coalesced) ve 247.15 GB/s ile pratik tavana ulaşılır[cite: 3].
+* Stride arttıkça bant genişliğinde dramatik bir düşüş gözlemlenmiştir[cite: 2]. Stride 32 olduğunda her thread birbirinden çok uzak adreslere eriştiği için (uncoalesced access), bellek denetleyicisi her thread için ayrı bir bellek paketi okumak zorunda kalır. Okunan verinin büyük bir kısmı kullanılmadan çöpe atıldığı için veri yolu tıkanır ve faydalı bant genişliği 11.69 GB/s'ye kadar çakılır.
